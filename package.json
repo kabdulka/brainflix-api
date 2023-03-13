@@ -1,0 +1,23 @@
+{
+  "name": "kenan-abdulkarim-brainflix-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kabdulka/brainflix-api.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kabdulka/brainflix-api/issues"
+  },
+  "homepage": "https://github.com/kabdulka/brainflix-api#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.21"
+  }
+}
