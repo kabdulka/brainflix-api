@@ -110,6 +110,15 @@ function writeVideos (data) {
       );
 }
 
+// upload images to json using multer
+const storage = multer.diskStorage({
+    destination: function(req, file, callback) {
+      callback(null, '/public/images');
+    },
+    filename: function (req, file, callback) {
+      callback(null, file.fieldname);
+    }
+  });
 
 // https://localhost:9000/videos/:videoId/comments
 
