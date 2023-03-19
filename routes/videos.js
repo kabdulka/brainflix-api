@@ -2,22 +2,15 @@
 const express = require("express");
 const { v4: uuid } = require("uuid");
 const router = express.Router();
-// const data = require("../data/videos2.json");
 const fs = require("fs");
 const cors = require("cors");
 const multer = require("multer")
 
-// const videosData = data;
-
-// TODO generate random numbers for video time
-
 router.use(cors())
 router.use(express.json())
-// app.use(express.static('../public'));
 
 // if add anything after the / then it will be part of the url
 router.get("/", (request, response) => {
-    // response.send(videosData);
     const videosData = readVideos();
 
     const strippedData = videosData.map((video) => {
@@ -25,7 +18,6 @@ router.get("/", (request, response) => {
             id: video.id,
             title: video.title,
             channel: video.channel,
-            // description: video.description
             image: video.image
 
         };
@@ -36,12 +28,10 @@ router.get("/", (request, response) => {
 
 router.get("/:id", (request, response) => {
 
-    // console.log("request.params: ", request.params.id);
     const videoId = request.params.id
     // find the video from the videos data that matches the param Id and return it
     const videosData = readVideos();
     const selectedVideo = videosData.find(video =>  video.id === videoId)
-    console.log(selectedVideo)
     if (selectedVideo) {
         response.status(200).json(selectedVideo);
     } else {
@@ -53,18 +43,14 @@ router.get("/:id", (request, response) => {
 router.post("/", (request, response) => {
 
     const body = request.body;
-    console.log(body)
     const videosData = readVideos();
     const newVideo = {
-
         id: uuid(),
         title: body.title,
         channel: "channel1",
         description: body.description,
         timestamp: Date.now(),
         image: "http://localhost:9000/images/Upload-video-preview.jpg",
-        // comments
-        // make a hard coded comment for each video
         comments: [
           
         ],
@@ -76,7 +62,6 @@ router.post("/", (request, response) => {
 
     }
 
-    console.log("request.body: ", request.body);
 
     videosData.push(newVideo);
 
@@ -88,7 +73,7 @@ router.post("/", (request, response) => {
 })
 
 function readVideos () {
-    const videosFile = fs.readFileSync("./data/videos2.json")
+    const videosFile = fs.readFileSync("./data/videos.json")
     const videosData = JSON.parse(videosFile);
     return videosData;
 }
@@ -96,7 +81,7 @@ function readVideos () {
 function writeVideos (data) {
     // const 
     fs.writeFile(
-        `./data/videos2.json`,
+        `./data/videos.json`,
         // TODO change to actual json file
         JSON.stringify(data),
         (err) => {
@@ -110,35 +95,44 @@ function writeVideos (data) {
       );
 }
 
-// upload images to json using multer
-const storage = multer.diskStorage({
-    destination: function(req, file, callback) {
-      callback(null, '/public/images');
-    },
-    filename: function (req, file, callback) {
-      callback(null, file.fieldname);
-    }
-  });
+// upload images to json using multer ----------------------------------------------------------
+// const storage = multer.diskStorage({
+//     destination: function(req, file, callback) {
+//       callback(null, '/public/images');
+//     },
+//     filename: function (req, file, callback) {
+//       callback(null, file.fieldname);
+//     }
+// });
 
-// https://localhost:9000/videos/:videoId/comments
+// router.post('/', upload.single('file'), (req, res) => {
+//     if (!req.file) {
+//       console.log("No file received");
+//       return res.send({
+//         success: false
+//       });
+  
+//     } else {
+//       console.log('file received');
+//       return res.send({
+//         success: true
+//       })
+//     }
+//   });
+  // end upload  -----------------------------------------------------------
 
 router.post("/:videoId/comments", (request, response) => {
-        // console.log("request.params: ", request.params.id);
         const videoId = request.params.videoId;
         // find the video from the videos data that matches the param Id and return it
         const videosData = readVideos();
         // get the video with the matching id
-        // console.log(videoId)
         const body = request.body;
 
         const selectedVideo = videosData.find(video => video.id === videoId )
 
-        console.log("here")
-        // console.log(selectedVideo);
 
         const videoComments = selectedVideo.comments
-        console.log("Video comments: ")
-        console.log(videoComments)
+
 
         videoComments.push({
             name: "anonymous",
@@ -148,8 +142,6 @@ router.post("/:videoId/comments", (request, response) => {
             likes: 0
         })
 
-        console.log("Video comments 22222222: ")
-        console.log(videoComments)
 
         writeVideos(videosData)
 
@@ -161,10 +153,28 @@ router.post("/:videoId/comments", (request, response) => {
 })
 
 
-//     const deleteCommentUrl = `${API_URL}/${request}/${currentVideo.id}/comments/${commentId}`;
-// https://localhost:9000/videos/:videoId/comments/:commentId
+router.put("/:videoId/likes", (request, response) => {
+
+    const vidId = request.params.videoId
+    const videosData = readVideos()
+
+    // get the selected video
+    const selectedVideo = videosData.find(video => vidId === video.id)
+    
+    // access the likes for the selected video
+    let vidLikes = selectedVideo.likes
+    // increment the counter
+    vidLikes++;
+    selectedVideo.likes = vidLikes;
+
+ 
+    writeVideos(videosData)
+    response.status(201).send(selectedVideo);
+
+})
+
+
 router.delete("/:videoId/comments/:commentId", (request, response) => {
-    console.log("current comment selected is : ")
 
     const videoId = request.params.videoId;
     const commentId = request.params.commentId;
@@ -177,13 +187,7 @@ router.delete("/:videoId/comments/:commentId", (request, response) => {
     // // get the selected comment (one that is clicked on to be deleted)
     const commentsToKeep = selectedVideo.comments.filter(comment => comment.id !== commentId);
     selectedVideo.comments = commentsToKeep
-    // console.log("current comment selected is: ")
-    console.log(commentsToKeep)
-    console.log("commentsToKeep")
-    console.log(selectedVideo.comments)
-    // res.status(204).send();
-    // error here
-    // TODO
+
     writeVideos(videosData)
 
 
